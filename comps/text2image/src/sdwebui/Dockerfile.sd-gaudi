@@ -1,0 +1,17 @@
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+# HABANA environment
+FROM opea/sd-gaudi:pre AS hpu
+
+
+
+COPY comps/text2image/src/sdwebui/oh_patch/pipeline_utils.py /home/user/.local/lib/python3.10/site-packages/optimum/habana/diffusers/pipelines/pipeline_utils.py
+COPY comps/text2image/src/sdwebui/oh_patch/pipeline_stable_video_diffusion.py /home/user/.local/lib/python3.10/site-packages/optimum/habana/diffusers/pipelines/stable_video_diffusion/pipeline_stable_video_diffusion.py
+COPY comps/text2image/src/sdwebui/oh_patch/pipeline_stable_diffusion_xl.py /home/user/.local/lib/python3.10/site-packages/optimum/habana/diffusers/pipelines/stable_diffusion_xl/pipeline_stable_diffusion_xl.py
+COPY comps/text2image/src/sdwebui/oh_patch/unet_2d_condition.py /home/user/.local/lib/python3.10/site-packages/optimum/habana/diffusers/models/unet_2d_condition.py
+WORKDIR /home/user/comps/text2image/sdwebui
+
+
+RUN echo "python text2image_sdwebui.py --device hpu --use_hpu_graphs --bf16 &\nhttp_proxy=\"\" /home/user/stable-diffusion-webui/sd/bin/python /home/user/stable-diffusion-webui/launch.py --skip-torch-cuda-test --share --skip-load-model-at-start --opea --opea-txt2img-url http://localhost:9379/sdapi/v1/txt2img --opea-img2img-url http://10.7.4.144:9379/sdapi/v1/img2img --server-name 0.0.0.0 --nowebui" > run.sh
+CMD bash run.sh
